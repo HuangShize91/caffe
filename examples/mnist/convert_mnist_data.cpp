@@ -6,6 +6,11 @@
 // The MNIST dataset could be downloaded at
 //    http://yann.lecun.com/exdb/mnist/
 
+// 2016.03.11 @huangshize
+// @hsz 查看了代码并增加了一些注视
+// @hsz 在mnist中数据下载之后为二进制流，需要转换为leveldb或者lmdb，二选一
+
+
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <google/protobuf/text_format.h>
@@ -45,7 +50,7 @@ void convert_dataset(const char* image_filename, const char* label_filename,
   CHECK(image_file) << "Unable to open file " << image_filename;
   CHECK(label_file) << "Unable to open file " << label_filename;
   // Read the magic and the meta data
-  uint32_t magic;
+  uint32_t magic;  // @hsz magic作用是什么?
   uint32_t num_items;
   uint32_t num_labels;
   uint32_t rows;
@@ -81,6 +86,8 @@ void convert_dataset(const char* image_filename, const char* label_filename,
   leveldb::WriteBatch* batch = NULL;
 
   // Open db
+  // @hsz db_backend & db_path 是 函数参数
+  // leveldb 和 lmdb 二选一
   if (db_backend == "leveldb") {  // leveldb
     LOG(INFO) << "Opening leveldb " << db_path;
     leveldb::Status status = leveldb::DB::Open(

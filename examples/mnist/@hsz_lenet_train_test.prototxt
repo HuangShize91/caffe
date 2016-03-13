@@ -1,0 +1,171 @@
+# WARNING this file is just a COMMENT
+# 2016.03.11 @huangshize
+
+name: "LeNet"
+layer {
+  name: "mnist"
+  type: "Data"                # 说明layer的类型
+  top: "data"
+  top: "label"
+  include {
+    phase: TRAIN
+  }
+  transform_param {
+    scale: 0.00390625
+  }
+  data_param {
+    source: "examples/mnist/mnist_train_lmdb"    # 必有参数
+    batch_size: 64            # 必有参数，说明批量处理数据的数量
+    backend: LMDB             #可选参数，说明是选用哪一个数据格式
+  }
+}
+layer {
+  name: "mnist"
+  type: "Data"
+  top: "data"
+  top: "label"
+  include {
+    phase: TEST
+  }
+  transform_param {
+    scale: 0.00390625
+  }
+  data_param {
+    source: "examples/mnist/mnist_test_lmdb"
+    batch_size: 100
+    backend: LMDB
+  }
+}
+layer {
+  name: "conv1"
+  type: "Convolution"                # input   n * c_i * h_i * w_i  &  output  n * c_o * h_o * w_o
+  bottom: "data"                     # h_o = (h_i + 2 * pad_h - kernel_h) / stride_h + 1     w_o alos likewise
+  top: "conv1"                       # pad 是指滤波前数据所加的“边缘”，默认为0       
+  param {                     # 对于filter的学习速率
+    lr_mult: 1
+  }
+  param {                     # 对于bias的学习速率
+    lr_mult: 2
+  }
+  convolution_param {
+    num_output: 20            # filter数量，也就是提取多少个特征，也就是c_o
+    kernel_size: 5            # filter大小（height * width)
+    stride: 1                 # 每个filter之间的间隔，默认为1
+    weight_filler {
+      type: "xavier"          # 初始化filter类型，默认type为"constant"，value为0
+    }
+    bias_filler {             # 初始化bias类型，默认value为0
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "pool1"               
+  type: "Pooling"
+  bottom: "conv1"
+  top: "pool1"
+  pooling_param {
+    pool: MAX                 # pool方法，有MAX（默认) / AVE / STOCHASTIC
+    kernel_size: 2            # 必有参数，filter大小
+    stride: 2                 # step for filter
+  }
+}
+layer {
+  name: "conv2"
+  type: "Convolution"
+  bottom: "pool1"
+  top: "conv2"
+  param {
+    lr_mult: 1
+  }
+  param {
+    lr_mult: 2
+  }
+  convolution_param {
+    num_output: 50
+    kernel_size: 5
+    stride: 1
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "pool2"
+  type: "Pooling"
+  bottom: "conv2"
+  top: "pool2"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    stride: 2
+  }
+}
+layer {
+  name: "ip1"
+  type: "InnerProduct"        # input  n * c_i * h_i * w_i   &  output  n * c_o * 1 * 1
+  bottom: "pool2"
+  top: "ip1"
+  param {
+    lr_mult: 1
+  }
+  param {
+    lr_mult: 2
+  }
+  inner_product_param {
+    num_output: 500           # filter 数量，也就是c_o
+    weight_filler {           # 默认值为0
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "relu1"
+  type: "ReLU"                # Activation / Neuron Layers
+  bottom: "ip1"               # input n * c * h * w  &  output the same sizes
+  top: "ip1"
+}
+layer {
+  name: "ip2"
+  type: "InnerProduct"
+  bottom: "ip1"
+  top: "ip2"
+  param {
+    lr_mult: 1
+  }
+  param {
+    lr_mult: 2
+  }
+  inner_product_param {
+    num_output: 10
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "accuracy"
+  type: "Accuracy"           # 仅供测试
+  bottom: "ip2"
+  bottom: "label"
+  top: "accuracy"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  name: "loss"
+  type: "SoftmaxWithLoss"    # Loss
+  bottom: "ip2"
+  bottom: "label"
+  top: "loss"
+}

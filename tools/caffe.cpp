@@ -1,3 +1,6 @@
+// 2016.03.16 @hsz
+// 查看了代码并添加了一些注释
+
 #ifdef WITH_PYTHON_LAYER
 #include "boost/python.hpp"
 namespace bp = boost::python;
@@ -12,7 +15,7 @@ namespace bp = boost::python;
 #include <vector>
 
 #include "boost/algorithm/string.hpp"
-#include "caffe/caffe.hpp"
+#include "caffe/caffe.hpp"                # @hsz caffe.hpp https://github.com/HuangShize91/caffe/blob/master/include/caffe/caffe.hpp
 #include "caffe/util/signal_handler.h"
 
 using caffe::Blob;
@@ -26,6 +29,7 @@ using caffe::Timer;
 using caffe::vector;
 using std::ostringstream;
 
+# @hsz DEFINE_xxx 相当于定义了一个变量，主要是用于命令行参数解析
 DEFINE_string(gpu, "",
     "Optional; run in GPU mode on given device IDs separated by ','."
     "Use '-gpu all' to run on all available GPUs. The effective training "
@@ -49,6 +53,7 @@ DEFINE_string(sighup_effect, "snapshot",
              "snapshot, stop or none.");
 
 // A simple registry for caffe commands.
+// @hsz 定义了函数指针类型和map类型
 typedef int (*BrewFunction)();
 typedef std::map<caffe::string, BrewFunction> BrewMap;
 BrewMap g_brew_map;
@@ -65,7 +70,7 @@ __Registerer_##func g_registerer_##func; \
 }
 
 static BrewFunction GetBrewFunction(const caffe::string& name) {
-  if (g_brew_map.count(name)) {
+  if (g_brew_map.count(name)) {     // @hsz count()查看name作为key在map是否存在
     return g_brew_map[name];
   } else {
     LOG(ERROR) << "Available caffe actions:";
@@ -152,13 +157,14 @@ caffe::SolverAction::Enum GetRequestedAction(
 
 // Train / Finetune a model.
 int train() {
+    // @hsz 检查命令行参数
   CHECK_GT(FLAGS_solver.size(), 0) << "Need a solver definition to train.";
   CHECK(!FLAGS_snapshot.size() || !FLAGS_weights.size())
       << "Give a snapshot to resume training or weights to finetune "
       "but not both.";
 
   caffe::SolverParameter solver_param;
-  caffe::ReadSolverParamsFromTextFileOrDie(FLAGS_solver, &solver_param);
+  caffe::ReadSolverParamsFromTextFileOrDie(FLAGS_solver, &solver_param);      // @hsz 读取solver配置文件，里面是各种参数
 
   // If the gpus flag is not provided, allow the mode and device to be set
   // in the solver prototxt.
@@ -173,11 +179,11 @@ int train() {
   }
 
   vector<int> gpus;
-  get_gpus(&gpus);
-  if (gpus.size() == 0) {
+  get_gpus(&gpus);                      // @hsz 读取GPU信息
+  if (gpus.size() == 0) {               // @hsz 只能用CPU
     LOG(INFO) << "Use CPU.";
     Caffe::set_mode(Caffe::CPU);
-  } else {
+  } else {                              // @hsz 使用GPU
     ostringstream s;
     for (int i = 0; i < gpus.size(); ++i) {
       s << (i ? ", " : "") << gpus[i];
@@ -194,19 +200,20 @@ int train() {
     Caffe::SetDevice(gpus[0]);
     Caffe::set_mode(Caffe::GPU);
     Caffe::set_solver_count(gpus.size());
-  }
+  }          // @hsz end if (gpus.size() == 0)
 
-  caffe::SignalHandler signal_handler(
+  caffe::SignalHandler signal_handler(                  // @hsz 发生中止情况
         GetRequestedAction(FLAGS_sigint_effect),
         GetRequestedAction(FLAGS_sighup_effect));
 
+  // @hsz 新建了一个solver 获取solver的Type
   shared_ptr<caffe::Solver<float> >
-      solver(caffe::SolverRegistry<float>::CreateSolver(solver_param));
+      solver(caffe::SolverRegistry<float>::CreateSolver(solver_param));  // @hsz CreateSolver()是类SolverRegistry中的一个方法
 
   solver->SetActionFunction(signal_handler.GetActionFunction());
 
   if (FLAGS_snapshot.size()) {
-    LOG(INFO) << "Resuming from " << FLAGS_snapshot;
+    LOG(INFO) << "Resuming from " << FLAGS_snapshot;  // @hsz 从snapshot恢复
     solver->Restore(FLAGS_snapshot.c_str());
   } else if (FLAGS_weights.size()) {
     CopyLayers(solver.get(), FLAGS_weights);
@@ -217,7 +224,7 @@ int train() {
     sync.Run(gpus);
   } else {
     LOG(INFO) << "Starting Optimization";
-    solver->Solve();
+    solver->Solve();                         // @hsz 重点 Solve()
   }
   LOG(INFO) << "Optimization Done.";
   return 0;
@@ -400,7 +407,7 @@ int main(int argc, char** argv) {
       "  device_query    show GPU diagnostic information\n"
       "  time            benchmark model execution time");
   // Run tool or show usage.
-  caffe::GlobalInit(&argc, &argv);
+  caffe::GlobalInit(&argc, &argv);              // @hsz caffe/src/caffe/common.cpp
   if (argc == 2) {
 #ifdef WITH_PYTHON_LAYER
     try {

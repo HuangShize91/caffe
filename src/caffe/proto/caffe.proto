@@ -1,3 +1,65 @@
+// 2016.03.16 @huangshize
+// message
+// BlobShape
+// BlobProto
+// BlobProtoVector
+// Datum
+// FillerParameter
+// NetParameter
+// SolverParameter
+// SolverState
+// NetState
+// ParamSpec
+// LayerParameter
+// TransformationParameter
+// LossParameter
+// AccuracyParameter
+// ArgMaxParameter
+// ConcatParameter
+// BatchNormParameter
+// BiasParamter
+// ContrastiveLossParameter
+// ConvolutionParameter
+// CropParameter
+// DataParameter
+// DropoutParameter
+// DummyDataParameter
+// EltwiseParameter
+// ELUParameter
+// EmbedParameter
+// ExpParameter
+// FlattenParameter
+// HDF5DataParameter
+// HDF5OutputParameter
+// HingeLossParameter
+// ImageDataParameter
+// InfogainLossParameter
+// InputParameter
+// LogParameter
+// LRNParameter
+// MemoryDataParameter
+// MVNParameter
+// PoolingParameter
+// PowerParameter
+// PythonParameter
+// ReductionParameter
+// ReLUParameter
+// ReshapParameter
+// ScaleParameter
+// SigmoidParameter
+// SliceParameter
+// SoftmaxParameter
+// TanHParameter
+// TileParameter
+// ThresholdParameter
+// WindowDataParameter
+// SPPParameter
+// V1LayerParameter
+// V0LayerParameter
+// PReLUParameter
+
+
+
 syntax = "proto2";
 
 package caffe;

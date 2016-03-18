@@ -15,7 +15,7 @@ namespace bp = boost::python;
 #include <vector>
 
 #include "boost/algorithm/string.hpp"
-#include "caffe/caffe.hpp"                # @hsz caffe.hpp https://github.com/HuangShize91/caffe/blob/master/include/caffe/caffe.hpp
+#include "caffe/caffe.hpp"                // @hsz caffe.hpp https://github.com/HuangShize91/caffe/blob/master/include/caffe/caffe.hpp
 #include "caffe/util/signal_handler.h"
 
 using caffe::Blob;
@@ -29,7 +29,7 @@ using caffe::Timer;
 using caffe::vector;
 using std::ostringstream;
 
-# @hsz DEFINE_xxx 相当于定义了一个变量，主要是用于命令行参数解析
+// @hsz DEFINE_xxx 相当于定义了一个变量，主要是用于命令行参数解析
 DEFINE_string(gpu, "",
     "Optional; run in GPU mode on given device IDs separated by ','."
     "Use '-gpu all' to run on all available GPUs. The effective training "
@@ -54,7 +54,7 @@ DEFINE_string(sighup_effect, "snapshot",
 
 // A simple registry for caffe commands.
 // @hsz 定义了函数指针类型和map类型
-typedef int (*BrewFunction)();
+typedef int (*BrewFunction)();  // @hsz 函数指针类型
 typedef std::map<caffe::string, BrewFunction> BrewMap;
 BrewMap g_brew_map;
 
@@ -162,8 +162,9 @@ int train() {
   CHECK(!FLAGS_snapshot.size() || !FLAGS_weights.size())
       << "Give a snapshot to resume training or weights to finetune "
       "but not both.";
-
+  // @hsz  定义了一个SolverParameter 对象   记载Solver的参数
   caffe::SolverParameter solver_param;
+  // ReadSolverParamsFromTextFileOrDie()定义在include/caffe/util/io.hpp
   caffe::ReadSolverParamsFromTextFileOrDie(FLAGS_solver, &solver_param);      // @hsz 读取solver配置文件，里面是各种参数
 
   // If the gpus flag is not provided, allow the mode and device to be set
@@ -209,7 +210,7 @@ int train() {
   // @hsz 新建了一个solver 获取solver的Type
   shared_ptr<caffe::Solver<float> >
       solver(caffe::SolverRegistry<float>::CreateSolver(solver_param));  // @hsz CreateSolver()是类SolverRegistry中的一个方法
-
+  //  设定了solver是否会进行snapshot以及是否会提前exit的指示
   solver->SetActionFunction(signal_handler.GetActionFunction());
 
   if (FLAGS_snapshot.size()) {

@@ -1,3 +1,6 @@
+// 2016.03.18 @huangshize
+// 查看了代码并增加了注释
+
 #include <cstdio>
 
 #include <string>
@@ -24,7 +27,7 @@ SolverAction::Enum Solver<Dtype>::GetRequestedAction() {
   }
   return SolverAction::NONE;
 }
-
+// @hsz Solver的构造函数，其中关键是读入Solve的参数，并进行Init()
 template <typename Dtype>
 Solver<Dtype>::Solver(const SolverParameter& param, const Solver* root_solver)
     : net_(), callbacks_(), root_solver_(root_solver),
@@ -40,7 +43,7 @@ Solver<Dtype>::Solver(const string& param_file, const Solver* root_solver)
   ReadSolverParamsFromTextFileOrDie(param_file, &param);
   Init(param);
 }
-
+// @hsz 关键的Init()函数
 template <typename Dtype>
 void Solver<Dtype>::Init(const SolverParameter& param) {
   CHECK(Caffe::root_solver() || root_solver_)
